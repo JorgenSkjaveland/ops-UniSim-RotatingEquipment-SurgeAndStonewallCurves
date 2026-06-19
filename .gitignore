@@ -18,3 +18,6 @@ Surge_Line/*
 
 Curves/*
 !Curves/.gitkeep
+
+StoneWall_Line/*
+!StoneWall_Line/.gitkeep
