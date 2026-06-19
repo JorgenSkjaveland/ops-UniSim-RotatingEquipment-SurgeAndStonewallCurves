@@ -1,0 +1,20 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+#Folders
+Plots/*
+!Plots/.gitkeep
+
+Surge_Line/*
+!Surge_Line/.gitkeep
+
+Curves/*
+!Curves/.gitkeep
