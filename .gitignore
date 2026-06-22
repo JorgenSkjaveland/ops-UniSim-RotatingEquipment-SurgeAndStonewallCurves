@@ -20,4 +20,7 @@ Curves/*
 !Curves/.gitkeep
 
 StoneWall_Line/*
-!StoneWall_Line/.gitkeepf
+!StoneWall_Line/.gitkeep
+
+Previous_Curve_Data/*
+!Previous_Curve_Data/.gitkeep

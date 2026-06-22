@@ -6,9 +6,12 @@ def main():
     
     Curves = CurveFunctions.GetProcessCurves("Curves")
 
-    CurveFunctions.GetSurgeLine(margin_Surge, Curves, Equipment_Name)
+    SurgeLine = CurveFunctions.GetSurgeLine(margin_Surge, Curves, Equipment_Name)
     
-    CurveFunctions.GetStoneWallLine(margin_StoneWall, Curves, Equipment_Name)
+    StoneWallLine = CurveFunctions.GetStoneWallLine(margin_StoneWall, Curves, Equipment_Name)
+
+    CurveFunctions.PlotBothConstainingLines(SurgeLine, StoneWallLine, Curves, Equipment_Name, margin_Surge, margin_StoneWall)
+
     return 0
     
 
