@@ -4,6 +4,47 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 
+
+def GetUserInputs():
+
+    try:
+        Equipment_Name = str(input("What is the name of the Equipment? "))
+    except:
+        print("Invalid Name.")
+        Equipment_Name = ''
+
+    try:
+        margin_Surge = float(input("What percentage margin for the Surge Line? "))
+    except:
+        print("Invalid input. Must be a number. \n Defaulting to 10%.")
+        margin_Surge = 10
+    try:
+        margin_StoneWall = float(input("What percentage margin for the Stone Wall Line? "))
+    except:
+        print("Invalid input. Must be a number. \n Defaulting to 10%.")
+        margin_StoneWall = 10
+
+    try:
+        Head_Unit = str(input("What is the unit for head? (m: Meter, kJ/kg: Kilojoule per kilogram) ")).lower()
+        if Head_Unit == 'kj/kg':
+            Head_Unit = 'kJ/kg'
+        elif Head_Unit not in ['m', 'kJ/kg']:
+            print("Invalid input. Must be 'm' or 'kJ/kg'. \n Defaulting to kJ/kg.")
+            Head_Unit = 'kJ/kg'
+    except:
+        print("Invalid input. Must be a string. \n Defaulting to kJ/kg.")
+        Head_Unit = 'kJ/kg'
+    try:
+        Flow_Unit = str(input("What is the unit for flow? (m3/h: Cubic meter per hour, m3/d: Cubic meter per day) ")).lower()
+        if Flow_Unit not in ['m3/h', 'm3/d']:
+            print("Invalid input. Must be 'm3/h' or 'm3/d'. \n Defaulting to m3/h.")
+            Flow_Unit = 'm3/h'
+    except:
+        print("Invalid input. Must be a string. \n Defaulting to m3/h.")
+        Flow_Unit = 'm3/h'
+
+    return Equipment_Name, margin_Surge, margin_StoneWall, Head_Unit, Flow_Unit
+
 def GetProcessCurves(folder: str) -> pd.DataFrame:
     csv_folder = Path(folder)
     csv_files = sorted(csv_folder.glob("*.csv"))
@@ -23,7 +64,7 @@ def GetProcessCurves(folder: str) -> pd.DataFrame:
 
 
 
-def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str) -> np.ndarray:
+def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> np.ndarray:
     #Get Column names for speed, flow and head. Assumes they start with "Speed", "Flow" and "Head" respectively.
     speed_column = next((col for col in curves.columns if col.startswith("Speed")), None)
     Flow_column = next((col for col in curves.columns if col.startswith("Flow")), None)
@@ -68,12 +109,14 @@ def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str) -> np.
     for speed, speed_df in Speed_df.items():
         ax.plot(speed_df[Flow_column], speed_df[Head_column], label=f"{speed:.0f} rpm Curve")
     ax.plot(SurgeFlow, Surge_Head, label=f"Surge Line {margin}%")
+    ax.set_xlabel(f"Flow [{Flow_Unit}]")
+    ax.set_ylabel(f"Head [{Head_Unit}]")
     ax.legend()
     ax.set_title(f"{EquipmentName}")
     plt.savefig(f"Plots/SurgeLine_{EquipmentName}_{margin}%.png")
     return np.array([SurgeFlow, Surge_Head])
 
-def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str) -> np.ndarray:
+def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> np.ndarray:
     # Get Column names for speed, flow and head. Assumes they start with "Speed", "Flow" and "Head" respectively.
     speed_column = next((col for col in curves.columns if col.startswith("Speed")), None)
     Flow_column = next((col for col in curves.columns if col.startswith("Flow")), None)
@@ -118,12 +161,14 @@ def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str) ->
     for speed, speed_df in Speed_df.items():
         ax.plot(speed_df[Flow_column], speed_df[Head_column], label=f"{speed:.0f} rpm Curve")
     ax.plot(StonewallFlow, Stonewall_Head, label=f"Stonewall Line {margin}%")
+    ax.set_xlabel(f"Flow [{Flow_Unit}]")
+    ax.set_ylabel(f"Head [{Head_Unit}]")
     ax.legend()
     ax.set_title(f"{EquipmentName}")
     plt.savefig(f"Plots/StonewallLine_{EquipmentName}_{margin}%.png")
     return np.array([StonewallFlow, Stonewall_Head])
 
-def PlotBothConstainingLines(SurgeLine: np.ndarray, StoneWallLine: np.ndarray, curves: pd.DataFrame, EquipmentName: str, margin_Surge: float, margin_StoneWall: float) -> int:
+def PlotBothConstainingLines(SurgeLine: np.ndarray, StoneWallLine: np.ndarray, curves: pd.DataFrame, EquipmentName: str, margin_Surge: float, margin_StoneWall: float, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> int:
     # Get Column names for speed, flow and head. Assumes they start with "Speed", "Flow" and "Head" respectively.
     speed_column = next((col for col in curves.columns if col.startswith("Speed")), None)
     Flow_column = next((col for col in curves.columns if col.startswith("Flow")), None)
@@ -142,6 +187,8 @@ def PlotBothConstainingLines(SurgeLine: np.ndarray, StoneWallLine: np.ndarray, c
         ax.plot(speed_df[Flow_column], speed_df[Head_column], label=f"{speed:.0f} rpm Curve")
     ax.plot(SurgeLine[0], SurgeLine[1], label=f"Surge Line {margin_Surge}%")
     ax.plot(StoneWallLine[0], StoneWallLine[1], label=f"Stonewall Line {margin_StoneWall}%")
+    ax.set_xlabel(f"Flow [{Flow_Unit}]")
+    ax.set_ylabel(f"Head [{Head_Unit}]")
     ax.legend()
     ax.set_title(f"{EquipmentName}")
     plt.savefig(f"Plots/ConstrainingLines_{EquipmentName}.png")
