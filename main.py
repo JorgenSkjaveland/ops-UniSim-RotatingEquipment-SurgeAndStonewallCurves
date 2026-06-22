@@ -1,6 +1,19 @@
 import CurveFunctions
 
 def main():
+
+    Equipment_Name, margin_Surge, margin_StoneWall = GetUserInputs()
+    
+    Curves = CurveFunctions.GetProcessCurves("Curves")
+
+    CurveFunctions.GetSurgeLine(margin_Surge, Curves, Equipment_Name)
+    
+    CurveFunctions.GetStoneWallLine(margin_StoneWall, Curves, Equipment_Name)
+    return 0
+    
+
+def GetUserInputs():
+
     try:
         Equipment_Name = str(input("What is the name of the Equipment? "))
     except:
@@ -8,18 +21,17 @@ def main():
         Equipment_Name = ''
 
     try:
-        margin = float(input("What percentage margin? "))
+        margin_Surge = float(input("What percentage margin for the Surge Line? "))
     except:
-        print("Invalid input. Must be a number.")
-        margin = 10
-    
-    Curves = CurveFunctions.GetProcessCurves("Curves")
+        print("Invalid input. Must be a number. \n Defaulting to 10%.")
+        margin_Surge = 10
+    try:
+        margin_StoneWall = float(input("What percentage margin for the Stone Wall Line? "))
+    except:
+        print("Invalid input. Must be a number. \n Defaulting to 10%.")
+        margin_StoneWall = 10
 
-    CurveFunctions.GetSurgeLine(margin, Curves, Equipment_Name)
-    
-    CurveFunctions.GetStoneWallLine(margin, Curves, Equipment_Name)
-    return 0
-    
+    return Equipment_Name, margin_Surge, margin_StoneWall
 
 
 if __name__ == "__main__":

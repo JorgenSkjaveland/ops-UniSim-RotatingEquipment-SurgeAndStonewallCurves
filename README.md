@@ -17,7 +17,20 @@ The two boundary points are then used to fit a linear curve, which is the surge 
 
 Here is an example of the surge line with 10\% margin and one with 20\% margin. The surge line is plotted together with the low speed and high speed curves.
 
-![Surge Line Plot](Images/10prctSurgeLine.png)
+![Surge Line Plot 10](Images/10prctSurgeLine.png)
 
-![Surge Line Plot](Images/20prctSurgeLine.png)
+![Surge Line Plot 20](Images/20prctSurgeLine.png)
+
+#### Stone Wall Line
+
+The same principle is used to calculate the stone wall. However, the equation for getting the stone wall points are slightly different. The stone wall points are calculated as follows:
+
+$$
+\text{Stone Wall Point} = F_{max} - (F_{max} - F_{min}) \cdot margin\%
+$$
+
+#### Plot of the Stone Wall Line
+The stone wall line is created similarly to the surge line. Here is an example of the stone wall line with 10\% margin.
+
+![Stone Wall Line Plot 10](Images/10prctStoneWallLine.png)
 
