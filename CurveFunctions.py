@@ -98,6 +98,7 @@ def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_U
 
     # Fit a line between the two surge points.
     Surge_Line = np.polynomial.Polynomial.fit([LowSpeed_Surge_Flow, HighSpeed_Surge_Flow], [LowSpeed_Surge_Head, HighSpeed_Surge_Head], 1)
+    np.savetxt(f"Surge_Line/Surge_Line_Equation_{EquipmentName}_{margin}%.tsv", np.array([Surge_Line.coef]).T, header="Surge Line Equation Coefficients")
 
     # Generate surge line points for plotting and saving.
     SurgeFlow = np.linspace(LowSpeed_Surge_Flow * 0.95, HighSpeed_Surge_Flow * 1.05, 10)
@@ -150,6 +151,7 @@ def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, He
 
     # Fit a line between the two stonewall points.
     Stonewall_Line = np.polynomial.Polynomial.fit([LowSpeed_Stonewall_Flow, HighSpeed_Stonewall_Flow], [LowSpeed_Stonewall_Head, HighSpeed_Stonewall_Head], 1)
+    np.savetxt(f"StoneWall_Line/Stonewall_Line_Equation_{EquipmentName}_{margin}%.tsv", np.array([Stonewall_Line.coef]).T, header="Stonewall Line Equation Coefficients")
 
     # Generate stonewall line points for plotting and saving.
     StonewallFlow = np.linspace(LowSpeed_Stonewall_Flow * 0.95, HighSpeed_Stonewall_Flow * 1.05, 10)
