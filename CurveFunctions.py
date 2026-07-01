@@ -107,12 +107,12 @@ def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_U
 
     # Fit a line between the two surge points.
     Surge_Line = np.polynomial.Polynomial.fit([LowSpeed_Surge_Flow, HighSpeed_Surge_Flow], [LowSpeed_Surge_Head, HighSpeed_Surge_Head], 1)
-    np.savetxt(f"Surge_Line/Surge_Line_Equation_{EquipmentName}_{margin}%.tsv", np.array([Surge_Line.coef]).T, header="Surge Line Equation Coefficients")
+    pd.DataFrame({'b': [Surge_Line.convert().coef[0]], 'a': [Surge_Line.convert().coef[1]]}).to_csv(f"Surge_Line/Surge_Line_Equation_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
 
     # Generate surge line points for plotting and saving.
     SurgeFlow = np.linspace(LowSpeed_Surge_Flow * 0.95, HighSpeed_Surge_Flow * 1.05, 10)
     Surge_Head = Surge_Line(SurgeFlow)
-    np.savetxt(f"Surge_Line/Surge_Line_{EquipmentName}_{margin}%.tsv", np.array([SurgeFlow, Surge_Head]).T)
+    pd.DataFrame({f'Flow [{Flow_Unit}]': SurgeFlow, f'Head [{Head_Unit}]': Surge_Head}).to_csv(f"Surge_Line/Surge_Line_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
 
     # Plot the curves and surge line.
     fig, ax = plt.subplots()
@@ -160,13 +160,13 @@ def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, He
 
     # Fit a line between the two stonewall points.
     Stonewall_Line = np.polynomial.Polynomial.fit([LowSpeed_Stonewall_Flow, HighSpeed_Stonewall_Flow], [LowSpeed_Stonewall_Head, HighSpeed_Stonewall_Head], 1)
-    np.savetxt(f"StoneWall_Line/Stonewall_Line_Equation_{EquipmentName}_{margin}%.tsv", np.array([Stonewall_Line.coef]).T, header="Stonewall Line Equation Coefficients")
+    pd.DataFrame({'b': [Stonewall_Line.convert().coef[0]], 'a': [Stonewall_Line.convert().coef[1]]}).to_csv(f"StoneWall_Line/Stonewall_Line_Equation_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
 
     # Generate stonewall line points for plotting and saving.
     StonewallFlow = np.linspace(LowSpeed_Stonewall_Flow * 0.95, HighSpeed_Stonewall_Flow * 1.05, 10)
     Stonewall_Head = Stonewall_Line(StonewallFlow)
-    np.savetxt(f"StoneWall_Line/Stonewall_Line_{EquipmentName}_{margin}%.tsv", np.array([StonewallFlow, Stonewall_Head]).T)
-
+    pd.DataFrame({f'Flow [{Flow_Unit}]': StonewallFlow, f'Head [{Head_Unit}]': Stonewall_Head}).to_csv(f"StoneWall_Line/Stonewall_Line_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
+    
     # Plot the curves and stonewall line.
     fig, ax = plt.subplots()
     for speed, speed_df in Speed_df.items():
