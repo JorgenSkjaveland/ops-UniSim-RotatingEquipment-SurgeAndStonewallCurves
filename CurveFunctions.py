@@ -46,29 +46,38 @@ def GetUserInputs():
     return Equipment_Name, margin_Surge, margin_StoneWall, Head_Unit, Flow_Unit
 
 def GetProcessCurves(folder: str) -> pd.DataFrame:
-    csv_folder = Path(folder)
-    csv_files = sorted(csv_folder.glob("*.csv"))
-    if not csv_files:
-        return pd.DataFrame()
-
-    first_df = pd.read_csv(csv_files[0], delimiter=";")
-    main_header = list(first_df.columns)
-    dfs = [first_df]
-
-    for file in csv_files[1:]:
-        # Reuse the first CSV header as canonical columns for all appended data.
-        df = pd.read_csv(file, delimiter=";", header=0, names=main_header)
-        dfs.append(df)
+    folder = Path(folder)
+    files = list(folder.glob("*"))
+    if files[0].suffix == ".csv":
+        csv_files = sorted(folder.glob("*.csv"))
+        first_df = pd.read_csv(csv_files[0], delimiter=";")
+        main_header = list(first_df.columns)
+        dfs = [first_df]
+        for file in csv_files[1:]:
+            # Reuse the first CSV header as canonical columns for all appended data.
+            df = pd.read_csv(file, delimiter=";", header=0, names=main_header)
+            dfs.append(df)
+    elif files[0].suffix == ".tsv":
+        tsv_files = sorted(folder.glob("*.tsv"))
+        first_df = pd.read_csv(tsv_files[0], delimiter="\t")
+        main_header = list(first_df.columns)
+        dfs = [first_df]
+        for file in tsv_files[1:]:
+            # Reuse the first TSV header as canonical columns for all appended data.
+            df = pd.read_csv(file, delimiter="\t", header=0, names=main_header)
+            dfs.append(df)
+    else:
+        raise ValueError("Unsupported file type. Please provide a folder containing exclusively CSV or TSV files.")
 
     return pd.concat(dfs, ignore_index=True)
 
 
 
 def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> np.ndarray:
-    #Get Column names for speed, flow and head. Assumes they start with "Speed", "Flow" and "Head" respectively.
-    speed_column = next((col for col in curves.columns if col.startswith("Speed")), None)
-    Flow_column = next((col for col in curves.columns if col.startswith("Flow")), None)
-    Head_column = next((col for col in curves.columns if col.startswith("Head")), None)
+    #Get Column names for speed, flow and head. Assumes they contain "Speed", "Flow" and "Head" respectively.
+    speed_column = next((col for col in curves.columns if "Speed" in col), None)
+    Flow_column = next((col for col in curves.columns if "Flow" in col), None)
+    Head_column = next((col for col in curves.columns if "Head" in col), None)
 
     # Get the lowest and highest speed curves.
     Lowest_Speed = curves[speed_column].min() if speed_column else None
@@ -118,10 +127,10 @@ def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_U
     return np.array([SurgeFlow, Surge_Head])
 
 def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> np.ndarray:
-    # Get Column names for speed, flow and head. Assumes they start with "Speed", "Flow" and "Head" respectively.
-    speed_column = next((col for col in curves.columns if col.startswith("Speed")), None)
-    Flow_column = next((col for col in curves.columns if col.startswith("Flow")), None)
-    Head_column = next((col for col in curves.columns if col.startswith("Head")), None)
+    # Get Column names for speed, flow and head. Assumes they contain "Speed", "Flow" and "Head" respectively.
+    speed_column = next((col for col in curves.columns if "Speed" in col), None)
+    Flow_column = next((col for col in curves.columns if "Flow" in col), None)
+    Head_column = next((col for col in curves.columns if "Head" in col), None)
 
     # Get the lowest and highest speed curves.
     Lowest_Speed = curves[speed_column].min() if speed_column else None
@@ -171,10 +180,10 @@ def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, He
     return np.array([StonewallFlow, Stonewall_Head])
 
 def PlotBothConstainingLines(SurgeLine: np.ndarray, StoneWallLine: np.ndarray, curves: pd.DataFrame, EquipmentName: str, margin_Surge: float, margin_StoneWall: float, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> int:
-    # Get Column names for speed, flow and head. Assumes they start with "Speed", "Flow" and "Head" respectively.
-    speed_column = next((col for col in curves.columns if col.startswith("Speed")), None)
-    Flow_column = next((col for col in curves.columns if col.startswith("Flow")), None)
-    Head_column = next((col for col in curves.columns if col.startswith("Head")), None)
+    # Get Column names for speed, flow and head. Assumes they contain "Speed", "Flow" and "Head" respectively.
+    speed_column = next((col for col in curves.columns if "Speed" in col), None)
+    Flow_column = next((col for col in curves.columns if "Flow" in col), None)
+    Head_column = next((col for col in curves.columns if "Head" in col), None)
 
     # Build a dataframe per speed for all speeds.
     unique_speeds = np.sort(curves[speed_column].dropna().unique()) if speed_column else []
