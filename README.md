@@ -41,7 +41,7 @@ Each speed curve generates a surge point, which is then used to create a polynom
 
 #### Plot of the Surge Curve
 
-Here is an example of the surge curve with 10\% margin and one with 20\% margin. The surge curve is plotted together with the low speed and high speed curves.
+Here is an example of the surge curve and a control curve with 10\% margin. The surge curve is plotted together with all the speed curves. 
 
 ![Surge Curve Plot](Images/SurgeLine_27KA0001_0.0.png)
 
@@ -56,14 +56,14 @@ $$
 $$
 
 #### Plot of the Stone Wall Curve
-The stone wall curve is created similarly to the surge curve. Here is an example of the stone wall curve with 10\% margin.
+The stone wall curve is created similarly to the surge curve. Here is an example of the stone wall curve and a control line with 10\% margin.
 
 ![Stone Wall Curve Plot](Images/StonewallLine_27KA0001_0.0.png)
 
 ![Stone Wall Curve Plot 10](Images/StonewallLine_27KA0001_10.0.png)
 
 #### Plot of both Constraining Curves (Surge and Stone Wall)
-Here is an example of both the surge curve and the stone wall curve with 10\% margin.
+Here is an example of both the surge curve and the stone wall curve.
 
 ![Constraining Curves Plot](Images/ConstrainingLines_27KA0001.png)
 
