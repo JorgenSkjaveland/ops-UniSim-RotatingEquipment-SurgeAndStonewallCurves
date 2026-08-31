@@ -79,12 +79,22 @@ def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_U
     Flow_column = next((col for col in curves.columns if "Flow" in col), None)
     Head_column = next((col for col in curves.columns if "Head" in col), None)
 
-    # Get the lowest and highest speed curves.
-    Lowest_Speed = curves[speed_column].min() if speed_column else None
-    Low_Speed_df = curves[curves[speed_column] == Lowest_Speed]
 
-    Highest_Speed = curves[speed_column].max() if speed_column else None
-    High_Speed_df = curves[curves[speed_column] == Highest_Speed]
+
+
+    #Fit a second order polynomial to the surge points for each speed curve.
+    min_flow = curves.groupby(speed_column)[Flow_column].min().values
+    max_head = curves.groupby(speed_column)[Head_column].max().values
+    Surge_Line = np.polynomial.Polynomial.fit(
+        min_flow, max_head, 2
+    )
+    pd.DataFrame({'c': [Surge_Line.convert().coef[0]], 'b': [Surge_Line.convert().coef[1]], 'a': [Surge_Line.convert().coef[2]]}).to_csv(f"Surge_Line/Surge_Line_Equation_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
+
+
+    # Generate surge line points for plotting and saving.
+    SurgeFlow, Surge_Head = Surge_Line.linspace(20)
+
+    pd.DataFrame({f'Flow [{Flow_Unit}]': SurgeFlow, f'Head [{Head_Unit}]': Surge_Head}).to_csv(f"Surge_Line/Surge_Line_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
 
     # Build a dataframe per speed for all speeds.
     unique_speeds = np.sort(curves[speed_column].dropna().unique()) if speed_column else []
@@ -93,26 +103,6 @@ def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_U
         speed: curves[curves[speed_column] == speed].copy()
         for speed in Speeds
     }
-
-    # Calculate surge line points for low and high speed curves.
-    Low_Speed_Low_Flow = Low_Speed_df[Flow_column].min()
-    Low_Speed_High_Flow = Low_Speed_df[Flow_column].max()
-    LowSpeed_Surge_Flow = Low_Speed_Low_Flow + (Low_Speed_High_Flow - Low_Speed_Low_Flow) * (margin / 100)
-    LowSpeed_Surge_Head = np.interp(LowSpeed_Surge_Flow, Low_Speed_df[Flow_column], Low_Speed_df[Head_column])
-    
-    High_Speed_Low_Flow = High_Speed_df[Flow_column].min()
-    High_Speed_High_Flow = High_Speed_df[Flow_column].max()
-    HighSpeed_Surge_Flow = High_Speed_Low_Flow + (High_Speed_High_Flow - High_Speed_Low_Flow) * (margin / 100)
-    HighSpeed_Surge_Head = np.interp(HighSpeed_Surge_Flow, High_Speed_df[Flow_column], High_Speed_df[Head_column])
-
-    # Fit a line between the two surge points.
-    Surge_Line = np.polynomial.Polynomial.fit([LowSpeed_Surge_Flow, HighSpeed_Surge_Flow], [LowSpeed_Surge_Head, HighSpeed_Surge_Head], 1)
-    pd.DataFrame({'b': [Surge_Line.convert().coef[0]], 'a': [Surge_Line.convert().coef[1]]}).to_csv(f"Surge_Line/Surge_Line_Equation_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
-
-    # Generate surge line points for plotting and saving.
-    SurgeFlow = np.linspace(LowSpeed_Surge_Flow * 0.95, HighSpeed_Surge_Flow * 1.05, 10)
-    Surge_Head = Surge_Line(SurgeFlow)
-    pd.DataFrame({f'Flow [{Flow_Unit}]': SurgeFlow, f'Head [{Head_Unit}]': Surge_Head}).to_csv(f"Surge_Line/Surge_Line_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
 
     # Plot the curves and surge line.
     fig, ax = plt.subplots()
@@ -124,6 +114,7 @@ def GetSurgeLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_U
     ax.legend()
     ax.set_title(f"{EquipmentName}")
     plt.savefig(f"Plots/SurgeLine_{EquipmentName}_{margin}%.png")
+    plt.close(fig)
     return np.array([SurgeFlow, Surge_Head])
 
 def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> np.ndarray:
@@ -132,12 +123,18 @@ def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, He
     Flow_column = next((col for col in curves.columns if "Flow" in col), None)
     Head_column = next((col for col in curves.columns if "Head" in col), None)
 
-    # Get the lowest and highest speed curves.
-    Lowest_Speed = curves[speed_column].min() if speed_column else None
-    Low_Speed_df = curves[curves[speed_column] == Lowest_Speed]
 
-    Highest_Speed = curves[speed_column].max() if speed_column else None
-    High_Speed_df = curves[curves[speed_column] == Highest_Speed]
+    # Fit a line between the two stonewall points.
+    max_flow = curves.groupby(speed_column)[Flow_column].max().values
+    min_head = curves.groupby(speed_column)[Head_column].min().values
+    Stonewall_Line = np.polynomial.Polynomial.fit(max_flow, min_head, 2)
+    pd.DataFrame({'c': [Stonewall_Line.convert().coef[0]], 'b': [Stonewall_Line.convert().coef[1]], 'a': [Stonewall_Line.convert().coef[2]]}).to_csv(f"StoneWall_Line/Stonewall_Line_Equation_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
+
+    # Generate surge line points for plotting and saving.
+    StonewallFlow, Stonewall_Head = Stonewall_Line.linspace(20)
+    
+    pd.DataFrame({f'Flow [{Flow_Unit}]': StonewallFlow, f'Head [{Head_Unit}]': Stonewall_Head}).to_csv(f"StoneWall_Line/StoneWall_Line_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
+    
 
     # Build a dataframe per speed for all speeds.
     unique_speeds = np.sort(curves[speed_column].dropna().unique()) if speed_column else []
@@ -146,26 +143,6 @@ def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, He
         speed: curves[curves[speed_column] == speed].copy()
         for speed in Speeds
     }
-
-    # Calculate stonewall line points for low and high speed curves.
-    Low_Speed_Low_Flow = Low_Speed_df[Flow_column].min()
-    Low_Speed_High_Flow = Low_Speed_df[Flow_column].max()
-    LowSpeed_Stonewall_Flow = Low_Speed_High_Flow - (Low_Speed_High_Flow - Low_Speed_Low_Flow) * (margin / 100)
-    LowSpeed_Stonewall_Head = np.interp(LowSpeed_Stonewall_Flow, Low_Speed_df[Flow_column], Low_Speed_df[Head_column])
-    
-    High_Speed_Low_Flow = High_Speed_df[Flow_column].min()
-    High_Speed_High_Flow = High_Speed_df[Flow_column].max()
-    HighSpeed_Stonewall_Flow = High_Speed_High_Flow - (High_Speed_High_Flow - High_Speed_Low_Flow) * (margin / 100)
-    HighSpeed_Stonewall_Head = np.interp(HighSpeed_Stonewall_Flow, High_Speed_df[Flow_column], High_Speed_df[Head_column])
-
-    # Fit a line between the two stonewall points.
-    Stonewall_Line = np.polynomial.Polynomial.fit([LowSpeed_Stonewall_Flow, HighSpeed_Stonewall_Flow], [LowSpeed_Stonewall_Head, HighSpeed_Stonewall_Head], 1)
-    pd.DataFrame({'b': [Stonewall_Line.convert().coef[0]], 'a': [Stonewall_Line.convert().coef[1]]}).to_csv(f"StoneWall_Line/Stonewall_Line_Equation_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
-
-    # Generate stonewall line points for plotting and saving.
-    StonewallFlow = np.linspace(LowSpeed_Stonewall_Flow * 0.95, HighSpeed_Stonewall_Flow * 1.05, 10)
-    Stonewall_Head = Stonewall_Line(StonewallFlow)
-    pd.DataFrame({f'Flow [{Flow_Unit}]': StonewallFlow, f'Head [{Head_Unit}]': Stonewall_Head}).to_csv(f"StoneWall_Line/Stonewall_Line_{EquipmentName}_{margin}%.tsv", sep='\t', index=False, header=True)
     
     # Plot the curves and stonewall line.
     fig, ax = plt.subplots()
@@ -177,6 +154,7 @@ def GetStoneWallLine(margin: float, curves: pd.DataFrame, EquipmentName: str, He
     ax.legend()
     ax.set_title(f"{EquipmentName}")
     plt.savefig(f"Plots/StonewallLine_{EquipmentName}_{margin}%.png")
+    plt.close(fig)
     return np.array([StonewallFlow, Stonewall_Head])
 
 def PlotBothConstainingLines(SurgeLine: np.ndarray, StoneWallLine: np.ndarray, curves: pd.DataFrame, EquipmentName: str, margin_Surge: float, margin_StoneWall: float, Head_Unit: str = "kJ/kg", Flow_Unit: str = "m3/h") -> int:
@@ -203,4 +181,5 @@ def PlotBothConstainingLines(SurgeLine: np.ndarray, StoneWallLine: np.ndarray, c
     ax.legend()
     ax.set_title(f"{EquipmentName}")
     plt.savefig(f"Plots/ConstrainingLines_{EquipmentName}.png")
+    plt.close(fig)
     return 0
