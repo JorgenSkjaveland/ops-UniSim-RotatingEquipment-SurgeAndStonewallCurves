@@ -20,34 +20,34 @@ uv add numpy pandas matplotlib
 
 3. Place your UniSim curve data in the "Curves" folder. The data should be in CSV format and should contain columns for speed, flow rate and head. The column names should start with "Speed", "Flow" and "Head" respectively.
 
-4. Run the main.py file. The program will ask for Equipment name and percentage margin to the Surge and Stonewall lines. This will calculate the surge and stonewall curves and save copyable tsv-files into the "Surge_Line" and "Stonewall_Line" folders respectively. Plots of the constraining lines are saved in the "Plots" folder.
+4. Run the main.py file. The program will ask for Equipment name, percentage margin to the Surge and Stonewall curves as well as units for head and volumetric flow. This will calculate the surge and stonewall curves and save copyable tsv-files into the "Surge_Line" and "Stonewall_Line" folders respectively. A simple tsv-file with the polynomial coefficients are also added to the "Surge_Line" and "Stonewall_Line" folders. Plots of the constraining curves are saved in the "Plots" folder.
 
-5. Open the generated tsv files and copy the data into your UniSim model to create the surge and stonewall curves. Remember that in UniSim Steady State, the curves may have to be implemented thorugh a spreadsheet.
+5. Open the generated tsv files and copy the data into your UniSim model to create the surge and stonewall curves. 
 
 ## Calculation method
 
-### Surge Line 
+### Surge Curve 
 
-The surge line was calculated by finding two points. The first point is the surge point on the lowest speed curve. The second point is the surge point on the highest speed curve. The point is defined as a margin from the end of the curve. This curve is given as a percentage of the whole span of flow rates for that particualr speed. The surge point is calculated as follows:
+The surge curve was calculated by generating a polynomial passing through each of the speed curves. Each curve has a minimum flow, to avoid surge. Each speed curves' minimum flow is scaled using the margin given by the user. This flow is given as a percentage of the whole span of flow rates for that particualr speed. The surge flows are calculated as follows:
 
 $$
-\text{Surge Point} = F_{min} + (F_{max} - F_{min}) \cdot margin\%
+\text{Surge Flow} = F_{min} + (F_{max} - F_{min}) \cdot margin\%
 $$
 
 
 Where $F_{min}$ is the minimum flow rate for that speed, $F_{max}$ is the maximum flow rate for that speed and $margin$ is the percentage margin from the end of the curve.
 
-The two boundary points are then used to fit a linear curve, which is the surge line. The surge line is then plotted together with the low speed and high speed curves.
+Each speed curve generates a surge point, which is then used to create a polynomial passing through all the surge points. The polynomial is then used to generate the control curve.
 
-#### Plot of the Surge Line
+#### Plot of the Surge Curve
 
-Here is an example of the surge line with 10\% margin and one with 20\% margin. The surge line is plotted together with the low speed and high speed curves.
+Here is an example of the surge curve with 10\% margin and one with 20\% margin. The surge curve is plotted together with the low speed and high speed curves.
 
-![Surge Line Plot 10](Images/10prctSurgeLine.png)
+![Surge Curve Plot](Images/SurgeLine_27KA0001_0.0.png)
 
-![Surge Line Plot 20](Images/20prctSurgeLine.png)
+![Surge Curve Plot 10](Images/SurgeLine_27KA0001_10.0.png)
 
-### Stone Wall Line
+### Stone Wall Curve
 
 The same principle is used to calculate the stone wall. However, the equation for getting the stone wall points are slightly different. The stone wall points are calculated as follows:
 
@@ -55,15 +55,17 @@ $$
 \text{Stone Wall Point} = F_{max} - (F_{max} - F_{min}) \cdot margin\%
 $$
 
-#### Plot of the Stone Wall Line
-The stone wall line is created similarly to the surge line. Here is an example of the stone wall line with 10\% margin.
+#### Plot of the Stone Wall Curve
+The stone wall curve is created similarly to the surge curve. Here is an example of the stone wall curve with 10\% margin.
 
-![Stone Wall Line Plot 10](Images/10prctStoneWallLine.png)
+![Stone Wall Curve Plot](Images/StonewallLine_27KA0001_0.0.png)
 
-#### Plot of both Constraining Lines (Surge and Stone Wall)
-Here is an example of both the surge line and the stone wall line with 10\% margin.
+![Stone Wall Curve Plot 10](Images/StonewallLine_27KA0001_10.0.png)
 
-![Constraining Lines Plot](Images/ConstrainingLines.png)
+#### Plot of both Constraining Curves (Surge and Stone Wall)
+Here is an example of both the surge curve and the stone wall curve with 10\% margin.
+
+![Constraining Curves Plot](Images/ConstrainingLines_27KA0001.png)
 
 ## Closing remarks
 
