@@ -71,4 +71,6 @@ Here is an example of both the surge curve and the stone wall curve.
 
 The code is intended to be a starting point for calculating surge and stone wall curves for rotating equipment in UniSim. The method used to calculate the surge and stone wall points is based on a percentage margin from the end of the curve, which may not be the most accurate method for all types of equipment. It is recommended to validate the calculated curves with actual data from the equipment or with more advanced methods if necessary.
 
+Another script for generating the relation between head, volumetric flow and efficiency for each supplied speed curve, is available in a repository called "ops-UniSim-RotatingEquipment-CurveInterpolation". The script is designed to handle vendor supplying 2d compressor maps with contour lines. This can be diffucult to make continous without the interpolation tool.
+
 I'm always open for suggestions on how to improve the code or the method used to calculate the surge and stone wall curves. Feel free to open an issue or submit a pull request if you have any ideas or improvements.
